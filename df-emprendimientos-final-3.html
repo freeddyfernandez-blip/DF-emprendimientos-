@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<title>DF Emprendimientos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0f0f1a;
+  --bg2: #16162a;
+  --bg3: #1e1e35;
+  --card: #1a1a2e;
+  --border: #2a2a4a;
+  --accent: #7c6af7;
+  --accent2: #f7c66a;
+  --green: #4ade80;
+  --red: #f87171;
+  --text: #e8e8f0;
+  --muted: #8888aa;
+  --font: 'DM Sans', sans-serif;
+  --serif: 'DM Serif Display', serif;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+/* NAV */
+.nav { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 100; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn { flex: 0 0 auto; padding: 14px 18px; font-size: 12px; font-weight: 500; color: var(--muted); background: none; border: none; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; transition: all .2s; font-family: var(--font); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.nav-btn .icon { font-size: 18px; }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-btn:hover { color: var(--text); }
+
+/* PAGES */
+.page { display: none; padding: 16px; max-width: 900px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* HEADER */
+.page-header { margin-bottom: 20px; }
+.page-title { font-family: var(--serif); font-size: 26px; color: var(--text); }
+.page-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* CARDS */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+
+/* STAT GRID */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.stat-value { font-family: var(--serif); font-size: 22px; margin-top: 4px; }
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.accent { color: var(--accent2); }
+
+/* INPUTS */
+input, select, textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 14px; padding: 10px 12px; width: 100%; outline: none; transition: border .2s; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+select option { background: var(--bg3); }
+label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 10px; }
+
+/* BUTTONS */
+.btn { padding: 11px 20px; border-radius: var(--radius-sm); border: none; font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; transition: all .18s; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #6a5ae0; }
+.btn-success { background: var(--green); color: #000; }
+.btn-danger { background: var(--red); color: #fff; font-size: 12px; padding: 7px 12px; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-full { width: 100%; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+/* SEARCH */
+.search-wrap { position: relative; margin-bottom: 14px; }
+.search-wrap input { padding-left: 38px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; }
+
+/* CLIENT LIST */
+.client-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: all .18s; display: flex; align-items: center; gap: 12px; }
+.client-item:hover { border-color: var(--accent); transform: translateX(3px); }
+.client-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; color: #fff; flex-shrink: 0; }
+.client-info { flex: 1; }
+.client-name { font-weight: 500; font-size: 15px; }
+.client-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.client-gain { font-family: var(--serif); font-size: 16px; color: var(--green); }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--bg3); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 10px 10px; text-align: left; }
+td { padding: 10px 10px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg3); }
+
+/* BADGE */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(74,222,128,.15); color: var(--green); }
+.badge-red { background: rgba(248,113,113,.15); color: var(--red); }
+.badge-accent { background: rgba(124,106,247,.15); color: var(--accent); }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500; align-items: flex-end; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border-top: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; padding: 20px 16px 30px; width: 100%; max-height: 90vh; overflow-y: auto; animation: slideUp .25s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-title { font-family: var(--serif); font-size: 20px; margin-bottom: 16px; }
+.modal-close { float: right; background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; margin-top: -4px; }
+
+/* INVOICE */
+.invoice-paper { background: #fff; color: #111; padding: 24px; border-radius: var(--radius); font-family: Arial, sans-serif; font-size: 13px; }
+.invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #111; padding-bottom: 16px; }
+.invoice-title { font-size: 22px; font-weight: 800; }
+.invoice-sub { font-size: 11px; color: #555; margin-top: 2px; }
+.inv-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.inv-table th { background: #111; color: #fff; padding: 8px; font-size: 11px; text-align: left; }
+.inv-table td { padding: 8px; border-bottom: 1px solid #ddd; font-size: 12px; }
+.inv-total { text-align: right; font-size: 15px; font-weight: 700; margin-top: 10px; }
+
+/* CHART container */
+.chart-wrap { position: relative; height: 220px; }
+
+/* TIMBRADO section */
+.timb-info { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-top: 10px; }
+.timb-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 6px; }
+.timb-row:last-child { margin-bottom: 0; }
+
+/* empty state */
+.empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+.empty-icon { font-size: 40px; margin-bottom: 10px; }
+
+/* LOGIN */
+#login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+#login-screen.hidden { display: none; }
+.login-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 24px; width: 100%; max-width: 380px; }
+.login-logo { font-family: var(--serif); font-size: 28px; color: var(--text); margin-bottom: 4px; }
+.login-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+.login-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.login-tab { flex: 1; padding: 9px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); color: var(--muted); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s; }
+.login-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.login-error { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.3); color: var(--red); font-size: 13px; padding: 10px 12px; border-radius: var(--radius-sm); margin-top: 10px; display: none; }
+.login-error.show { display: block; }
+
+/* USER BADGE */
+.user-badge { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--bg3); border-bottom: 1px solid var(--border); font-size: 13px; justify-content: space-between; }
+.user-badge-name { color: var(--accent); font-weight: 600; }
+.user-badge-logout { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 11px; padding: 4px 10px; border-radius: 99px; cursor: pointer; font-family: var(--font); transition: all .18s; }
+.user-badge-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* PRINT */
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: fixed; inset: 0; background: white; padding: 20px; }
+}
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN SCREEN ===================== -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">DF Emprendimientos</div>
+    <div class="login-sub">RUC 6008852-4 — Acceso al sistema</div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchLoginTab('login')">Ingresar</button>
+      <button class="login-tab" onclick="switchLoginTab('register')">Registrarse</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form">
+      <label>Usuario</label>
+      <input type="text" id="login-user" placeholder="Tu nombre de usuario" autocomplete="username">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-primary btn-full" onclick="doLogin()">Ingresar →</button>
+      </div>
+      <div class="login-error" id="login-err">Usuario o contraseña incorrectos.</div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="register-form" style="display:none">
+      <label>Nombre de usuario</label>
+      <input type="text" id="reg-user" placeholder="Elegí un nombre de usuario" autocomplete="username">
+      <label>Contraseña</label>
+      <input type="password" id="reg-pass" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+      <label>Repetir contraseña</label>
+      <input type="password" id="reg-pass2" placeholder="Repetí la contraseña" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-primary btn-full" onclick="doRegister()">Crear cuenta →</button>
+      </div>
+      <div class="login-error" id="reg-err">Error en el registro.</div>
+    </div>
+  </div>
+</div>
+
+<!-- USER BADGE -->
+<div class="user-badge" id="user-badge" style="display:none">
+  <span>👤 Sesión: <span class="user-badge-name" id="badge-username"></span></span>
+  <button class="user-badge-logout" onclick="doLogout()">Cerrar sesión</button>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard">
+    <span class="icon">📊</span>Dashboard
+  </button>
+  <button class="nav-btn" onclick="showPage('clientes')" id="nav-clientes">
+    <span class="icon">👥</span>Clientes
+  </button>
+  <button class="nav-btn" onclick="showPage('facturas')" id="nav-facturas">
+    <span class="icon">🧾</span>Facturas
+  </button>
+  <button class="nav-btn" onclick="showPage('timbrado')" id="nav-timbrado">
+    <span class="icon">⚙️</span>Timbrado
+  </button>
+</nav>
+
+<!-- ===================== DASHBOARD ===================== -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div class="page-title">DF Emprendimientos</div>
+    <div class="page-sub">RUC 6008852-4 — Resumen general</div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Ganancia semana</div>
+      <div class="stat-value green" id="dash-semana">₲ 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ganancia año</div>
+      <div class="stat-value accent" id="dash-anio">₲ 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total gasto</div>
+      <div class="stat-value red" id="dash-gasto">₲ 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Clientes activos</div>
+      <div class="stat-value" id="dash-clientes">0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ganancias por semana — últimas 8 semanas</div>
+    <div class="chart-wrap"><canvas id="chartSemana"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Gastos vs Ganancias — últimas 8 semanas</div>
+    <div class="chart-wrap"><canvas id="chartComp"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Top clientes por ganancia</div>
+    <div id="top-clientes-list"></div>
+  </div>
+</div>
+
+<!-- ===================== CLIENTES ===================== -->
+<div class="page" id="page-clientes">
+  <div class="page-header">
+    <div class="page-title">Clientes</div>
+    <div class="page-sub" id="clientes-count">0 clientes registrados</div>
+  </div>
+
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Buscar cliente..." id="search-cliente" oninput="renderClienteList()">
+  </div>
+
+  <button class="btn btn-primary btn-full" onclick="openModal('modal-nuevo-cliente')">+ Agregar cliente</button>
+  <br><br>
+
+  <div id="lista-clientes"></div>
+</div>
+
+<!-- ===================== FACTURAS ===================== -->
+<div class="page" id="page-facturas">
+  <div class="page-header">
+    <div class="page-title">Facturas</div>
+    <div class="page-sub">Al contado — DF Emprendimientos</div>
+  </div>
+
+  <button class="btn btn-primary btn-full" onclick="openModal('modal-nueva-factura')">+ Nueva factura</button>
+  <br><br>
+
+  <div id="lista-facturas"></div>
+</div>
+
+<!-- ===================== TIMBRADO ===================== -->
+<div class="page" id="page-timbrado">
+  <div class="page-header">
+    <div class="page-title">Configuración de timbrado</div>
+    <div class="page-sub">Gestión de timbrado fiscal</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Timbrado vigente</div>
+    <div id="timbrado-vigente-info"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="openModal('modal-timbrado')">✏️ Editar timbrado</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos de la empresa</div>
+    <div class="timb-info">
+      <div class="timb-row"><span>Razón social</span><strong>DF Emprendimientos</strong></div>
+      <div class="timb-row"><span>RUC</span><strong>6008852-4</strong></div>
+      <div class="timb-row"><span>Condición</span><strong>Contribuyente</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- =========== MODAL NUEVO CLIENTE =========== -->
+<div class="modal-overlay" id="modal-nuevo-cliente">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-nuevo-cliente')">✕</button>
+    <div class="modal-title">Nuevo cliente</div>
+    <label>Nombre completo</label>
+    <input type="text" id="nc-nombre" placeholder="Ej: María García">
+    <label>Teléfono (opcional)</label>
+    <input type="text" id="nc-tel" placeholder="+595...">
+    <label>Dirección (opcional)</label>
+    <input type="text" id="nc-dir" placeholder="Ciudad, barrio...">
+    <div class="btn-row">
+      <button class="btn btn-primary btn-full" onclick="agregarCliente()">Guardar cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========== MODAL VER CLIENTE =========== -->
+<div class="modal-overlay" id="modal-cliente-detalle">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-cliente-detalle')">✕</button>
+    <div class="modal-title" id="det-nombre">Cliente</div>
+    <div id="det-stats" class="stat-grid" style="margin-bottom:14px"></div>
+
+    <div class="card-title">Artículos comprados</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Artículo</th><th>Cant</th><th>P.Compra</th><th>P.Venta</th><th>Gan.</th><th></th></tr></thead>
+        <tbody id="det-items"></tbody>
+      </table>
+    </div>
+
+    <label>Artículo</label><input type="text" id="item-nombre" placeholder="Nombre del artículo">
+    <label>Cantidad</label><input type="number" id="item-cant" placeholder="1" min="1">
+    <label>Precio de compra (₲)</label><input type="number" id="item-pc" placeholder="0">
+    <label>Precio de venta (₲)</label><input type="number" id="item-pv" placeholder="0">
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="agregarItem()">+ Agregar artículo</button>
+      <button class="btn btn-ghost" onclick="imprimirCliente()">🖨️ Imprimir</button>
+      <button class="btn btn-success btn-sm" onclick="generarFacturaDesdeCliente()">🧾 Facturar</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-danger btn-sm" onclick="eliminarClienteActual()">🗑️ Eliminar cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========== MODAL NUEVA FACTURA =========== -->
+<div class="modal-overlay" id="modal-nueva-factura">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-nueva-factura')">✕</button>
+    <div class="modal-title">Nueva factura</div>
+
+    <label>Cliente (sistema)</label>
+    <select id="fac-cliente" onchange="onClienteFacturaChange()">
+      <option value="">— Seleccionar —</option>
+    </select>
+
+    <label>Razón social del cliente</label>
+    <input type="text" id="fac-razon" placeholder="Nombre o razón social para la factura">
+    <label>RUC / CI del cliente</label>
+    <input type="text" id="fac-ruc" placeholder="Ej: 1234567-8 (opcional)">
+
+    <label>Fecha</label>
+    <input type="date" id="fac-fecha">
+    <label>Condición de pago</label>
+    <input type="text" value="CONTADO" id="fac-condicion" readonly style="background:var(--bg3);opacity:.7">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;margin-bottom:6px">
+      <div class="card-title" style="margin:0">Ítems de la factura</div>
+      <button class="btn btn-ghost btn-sm" onclick="cargarItemsCliente()">📋 Cargar artículos del cliente</button>
+    </div>
+    <div id="fac-items-list"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <div>
+        <label>Artículo</label>
+        <input type="text" id="fac-item-nombre" placeholder="Descripción">
+      </div>
+      <div>
+        <label>Cant</label>
+        <input type="number" id="fac-item-cant" placeholder="1" min="1">
+      </div>
+      <div>
+        <label>Precio unit. (₲)</label>
+        <input type="number" id="fac-item-precio" placeholder="0">
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn btn-ghost btn-sm btn-full" onclick="addFacItem()">+ Agregar</button>
+      </div>
+    </div>
+    <hr class="divider">
+    <div id="fac-totales-display" style="text-align:right;font-size:13px;line-height:1.8"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-full" onclick="guardarFactura()">Generar factura</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========== MODAL VER FACTURA =========== -->
+<div class="modal-overlay" id="modal-ver-factura">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-ver-factura')">✕</button>
+    <div class="print-area" id="invoice-print-area"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="window.print()">🖨️ Imprimir factura</button>
+      <button class="btn btn-danger btn-sm" onclick="eliminarFacturaActual()">🗑️ Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========== MODAL TIMBRADO =========== -->
+<div class="modal-overlay" id="modal-timbrado">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-timbrado')">✕</button>
+    <div class="modal-title">Editar timbrado</div>
+    <label>Número de timbrado</label>
+    <input type="text" id="t-numero" placeholder="Ej: 12345678">
+    <label>Establecimiento</label>
+    <input type="text" id="t-est" placeholder="001">
+    <label>Punto de expedición</label>
+    <input type="text" id="t-punto" placeholder="001">
+    <label>Número inicial de factura</label>
+    <input type="number" id="t-inicio" placeholder="1">
+    <label>Fecha de inicio de vigencia</label>
+    <input type="date" id="t-inicio-fecha">
+    <label>Fecha de vencimiento</label>
+    <input type="date" id="t-vence">
+    <div class="btn-row">
+      <button class="btn btn-primary btn-full" onclick="guardarTimbrado()">Guardar timbrado</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT CLIENTE -->
+<div class="print-area" id="print-cliente-area" style="display:none"></div>
+
+<script>
+// ===================== SUPABASE (fetch directo) =====================
+const SUPA_URL = 'https://ictognjxntmklzhkronv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdG9nbmp4bnRta2x6aGtyb252Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTA2ODgsImV4cCI6MjA4OTA4NjY4OH0.utxIgFu6GJjmwlUrKtSYogBCpaTZN4ZafaUG4A40rV0';
+
+async function dbGet(table, filters) {
+  let url = SUPA_URL + '/rest/v1/' + table + '?';
+  for(const [k,v] of Object.entries(filters)) url += k + '=eq.' + encodeURIComponent(v) + '&';
+  url += 'limit=1';
+  const r = await fetch(url, { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } });
+  const data = await r.json();
+  return Array.isArray(data) ? data[0] : null;
+}
+
+async function dbInsert(table, row) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(row)
+  });
+  if(!r.ok) { const e = await r.text(); throw new Error(e); }
+}
+
+async function dbUpsert(table, row, onConflict) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + table + '?on_conflict=' + onConflict, {
+    method: 'POST',
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(row)
+  });
+  if(!r.ok) { const e = await r.text(); throw new Error(e); }
+}
+
+// ===================== AUTH =====================
+let currentUser = null;
+
+function switchLoginTab(tab) {
+  document.querySelectorAll('.login-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login' && i===0)||(tab==='register' && i===1)));
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('login-err').classList.remove('show');
+  document.getElementById('reg-err').classList.remove('show');
+}
+
+function setLoginLoading(btn, loading) {
+  btn.disabled = loading;
+  btn.textContent = loading ? 'Cargando...' : btn.dataset.label;
+}
+
+async function doLogin() {
+  const user = document.getElementById('login-user').value.trim().toLowerCase();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  const btn = document.querySelector('#login-form .btn-primary');
+  if(!btn.dataset.label) btn.dataset.label = btn.textContent;
+  if(!user || !pass) { errEl.textContent = 'Completá todos los campos.'; errEl.classList.add('show'); return; }
+  setLoginLoading(btn, true);
+  try {
+    const data = await dbGet('usuarios', { username: user });
+    if(!data || data.password !== btoa(pass)) {
+      errEl.textContent = 'Usuario o contraseña incorrectos.'; errEl.classList.add('show');
+    } else {
+      errEl.classList.remove('show');
+      await loginSuccess(user);
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión: ' + e.message; errEl.classList.add('show');
+  }
+  setLoginLoading(btn, false);
+}
+
+async function doRegister() {
+  const user = document.getElementById('reg-user').value.trim().toLowerCase();
+  const pass = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  const errEl = document.getElementById('reg-err');
+  const btn = document.querySelector('#register-form .btn-primary');
+  if(!btn.dataset.label) btn.dataset.label = btn.textContent;
+  if(!user || !pass || !pass2) { errEl.textContent = 'Completá todos los campos.'; errEl.classList.add('show'); return; }
+  if(user.length < 3 || user.length > 20) { errEl.textContent = 'El usuario debe tener entre 3 y 20 caracteres.'; errEl.classList.add('show'); return; }
+  if(!/^[a-z0-9_]+$/.test(user)) { errEl.textContent = 'Solo letras, números y guión bajo. Sin espacios.'; errEl.classList.add('show'); return; }
+  if(pass.length < 4) { errEl.textContent = 'La contraseña debe tener al menos 4 caracteres.'; errEl.classList.add('show'); return; }
+  if(pass !== pass2) { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.classList.add('show'); return; }
+  setLoginLoading(btn, true);
+  try {
+    const existing = await dbGet('usuarios', { username: user });
+    if(existing) { errEl.textContent = 'Ese nombre de usuario ya está en uso.'; errEl.classList.add('show'); setLoginLoading(btn, false); return; }
+    await dbInsert('usuarios', { username: user, password: btoa(pass) });
+    errEl.classList.remove('show');
+    await loginSuccess(user);
+  } catch(e) {
+    errEl.textContent = 'Error: ' + e.message; errEl.classList.add('show');
+  }
+  setLoginLoading(btn, false);
+}
+
+async function loginSuccess(user) {
+  currentUser = user;
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('user-badge').style.display = 'flex';
+  document.getElementById('badge-username').textContent = user;
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('reg-user').value = '';
+  document.getElementById('reg-pass').value = '';
+  document.getElementById('reg-pass2').value = '';
+  await load();
+  renderTimbradoInfo();
+  renderDashboard();
+  renderClienteList();
+}
+
+async function doLogout() {
+  if(!confirm('¿Cerrar sesión?')) return;
+  currentUser = null;
+  DB = { clientes: [], facturas: [], timbrado: { numero: '', est: '001', punto: '001', actual: 1, vigencia: '', vencimiento: '' } };
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('user-badge').style.display = 'none';
+  switchLoginTab('login');
+  showPage('dashboard');
+}
+
+// ===================== DATA STORE =====================
+let DB = {
+  clientes: [],
+  facturas: [],
+  timbrado: { numero: '', est: '001', punto: '001', actual: 1, vigencia: '', vencimiento: '' }
+};
+
+async function save() {
+  if(!currentUser) return;
+  try {
+    await dbUpsert('datos_usuario', { username: currentUser, data: DB, updated_at: new Date().toISOString() }, 'username');
+  } catch(e) { console.error('save error:', e); }
+}
+
+async function load() {
+  if(!currentUser) return;
+  try {
+    const data = await dbGet('datos_usuario', { username: currentUser });
+    if(data && data.data) DB = data.data;
+    else DB = { clientes: [], facturas: [], timbrado: { numero: '', est: '001', punto: '001', actual: 1, vigencia: '', vencimiento: '' } };
+  } catch(e) { console.error('load error:', e); }
+}
+
+// ===================== NAV =====================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  if(id === 'dashboard') renderDashboard();
+  if(id === 'clientes') renderClienteList();
+  if(id === 'facturas') renderFacturas();
+  if(id === 'timbrado') renderTimbradoInfo();
+}
+
+// ===================== MODAL =====================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if(id === 'modal-nueva-factura') initNuevaFactura();
+  if(id === 'modal-timbrado') loadTimbradoForm();
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
+});
+
+// ===================== FORMAT =====================
+function fmt(n) { return '₲ ' + Math.round(n).toLocaleString('es-PY'); }
+function fmtNum(n) { return Math.round(n).toLocaleString('es-PY'); }
+function initials(name) { return name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase(); }
+function weekKey(date) {
+  const d = new Date(date); const jan1 = new Date(d.getFullYear(),0,1);
+  const wk = Math.ceil(((d - jan1)/86400000 + jan1.getDay()+1)/7);
+  return d.getFullYear() + '-W' + String(wk).padStart(2,'0');
+}
+function yearKey(date) { return new Date(date).getFullYear(); }
+
+// ===================== CLIENTES =====================
+function agregarCliente() {
+  const nombre = document.getElementById('nc-nombre').value.trim();
+  if(!nombre) { alert('Ingresá el nombre'); return; }
+  if(DB.clientes.length >= 1000) { alert('Límite de 1000 clientes alcanzado'); return; }
+  DB.clientes.push({ id: Date.now(), nombre, tel: document.getElementById('nc-tel').value.trim(), dir: document.getElementById('nc-dir').value.trim(), items: [], creado: new Date().toISOString() });
+  save(); // async but fire-and-forget
+  closeModal('modal-nuevo-cliente');
+  document.getElementById('nc-nombre').value = '';
+  document.getElementById('nc-tel').value = '';
+  document.getElementById('nc-dir').value = '';
+  renderClienteList();
+}
+
+function renderClienteList() {
+  const q = (document.getElementById('search-cliente')?.value || '').toLowerCase();
+  const lista = document.getElementById('lista-clientes');
+  const count = document.getElementById('clientes-count');
+  let clientes = DB.clientes.filter(c => c.nombre.toLowerCase().includes(q));
+  count.textContent = DB.clientes.length + ' clientes registrados';
+  if(!clientes.length) { lista.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div>No hay clientes aún</div></div>'; return; }
+  lista.innerHTML = clientes.map(c => {
+    const ganancia = clienteGanancia(c);
+    const gasto = clienteGasto(c);
+    return `<div class="client-item" onclick="verCliente(${c.id})">
+      <div class="client-avatar">${initials(c.nombre)}</div>
+      <div class="client-info">
+        <div class="client-name">${c.nombre}</div>
+        <div class="client-meta">${c.items.length} artículos · Gasto: ${fmt(gasto)}</div>
+      </div>
+      <div class="client-gain">${fmt(ganancia)}</div>
+    </div>`;
+  }).join('');
+}
+
+function clienteGanancia(c) { return c.items.reduce((a,i) => a + (i.pv - i.pc) * i.cant, 0); }
+function clienteGasto(c) { return c.items.reduce((a,i) => a + i.pc * i.cant, 0); }
+function clienteVenta(c) { return c.items.reduce((a,i) => a + i.pv * i.cant, 0); }
+
+let currentClienteId = null;
+function verCliente(id) {
+  currentClienteId = id;
+  const c = DB.clientes.find(x => x.id === id);
+  if(!c) return;
+  document.getElementById('det-nombre').textContent = c.nombre;
+  renderDetItems(c);
+  const g = clienteGanancia(c), gs = clienteGasto(c), v = clienteVenta(c);
+  document.getElementById('det-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Gasto total</div><div class="stat-value red" style="font-size:16px">${fmt(gs)}</div></div>
+    <div class="stat-card"><div class="stat-label">Ganancia</div><div class="stat-value green" style="font-size:16px">${fmt(g)}</div></div>
+    <div class="stat-card"><div class="stat-label">Total vendido</div><div class="stat-value" style="font-size:16px">${fmt(v)}</div></div>
+    <div class="stat-card"><div class="stat-label">Ítems</div><div class="stat-value" style="font-size:16px">${c.items.length}</div></div>`;
+  openModal('modal-cliente-detalle');
+}
+
+function renderDetItems(c) {
+  const tbody = document.getElementById('det-items');
+  if(!c.items.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center">Sin artículos</td></tr>'; return; }
+  tbody.innerHTML = c.items.map((it,i) => `
+    <tr>
+      <td>${it.nombre}</td>
+      <td>${it.cant}</td>
+      <td>${fmtNum(it.pc)}</td>
+      <td>${fmtNum(it.pv)}</td>
+      <td><span class="badge badge-green">${fmtNum((it.pv-it.pc)*it.cant)}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="eliminarItem(${i})">✕</button></td>
+    </tr>`).join('');
+}
+
+function agregarItem() {
+  const c = DB.clientes.find(x => x.id === currentClienteId);
+  if(!c) return;
+  const nombre = document.getElementById('item-nombre').value.trim();
+  const cant = parseInt(document.getElementById('item-cant').value) || 1;
+  const pc = parseFloat(document.getElementById('item-pc').value) || 0;
+  const pv = parseFloat(document.getElementById('item-pv').value) || 0;
+  if(!nombre) { alert('Ingresá el nombre del artículo'); return; }
+  c.items.push({ nombre, cant, pc, pv, fecha: new Date().toISOString() });
+  save();
+  document.getElementById('item-nombre').value = '';
+  document.getElementById('item-cant').value = '';
+  document.getElementById('item-pc').value = '';
+  document.getElementById('item-pv').value = '';
+  renderDetItems(c);
+  verCliente(currentClienteId);
+}
+
+function eliminarItem(idx) {
+  const c = DB.clientes.find(x => x.id === currentClienteId);
+  if(!c) return;
+  if(!confirm('¿Eliminar este artículo?')) return;
+  c.items.splice(idx, 1);
+  save(); // async but fire-and-forget
+  verCliente(currentClienteId);
+}
+
+function eliminarClienteActual() {
+  if(!confirm('¿Eliminar este cliente y todos sus datos?')) return;
+  DB.clientes = DB.clientes.filter(x => x.id !== currentClienteId);
+  save(); // async but fire-and-forget
+  closeModal('modal-cliente-detalle'); renderClienteList();
+}
+
+function imprimirCliente() {
+  const c = DB.clientes.find(x => x.id === currentClienteId);
+  if(!c) return;
+  const v = clienteVenta(c);
+  const rows = c.items.map(it => `<tr>
+    <td style="padding:7px 8px">${it.nombre}</td>
+    <td style="padding:7px 8px;text-align:center">${it.cant}</td>
+    <td style="padding:7px 8px;text-align:right">₲ ${fmtNum(it.pv)}</td>
+    <td style="padding:7px 8px;text-align:right">₲ ${fmtNum(it.pv * it.cant)}</td>
+  </tr>`).join('');
+  const area = document.getElementById('print-cliente-area');
+  area.style.display = 'block';
+  area.innerHTML = `<div style="font-family:Arial;font-size:13px;color:#111;padding:20px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:14px">
+      <div>
+        <div style="font-size:18px;font-weight:800">DF Emprendimientos</div>
+        <div style="font-size:11px;color:#555">RUC: 6008852-4</div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#555">
+        <div>Fecha: ${new Date().toLocaleDateString('es-PY')}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-weight:700;font-size:14px">Cliente: ${c.nombre}</div>
+      ${c.tel ? `<div style="font-size:12px;color:#555">Tel: ${c.tel}</div>` : ''}
+      ${c.dir ? `<div style="font-size:12px;color:#555">Dir: ${c.dir}</div>` : ''}
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#111;color:#fff">
+        <th style="padding:8px;text-align:left">Artículo</th>
+        <th style="padding:8px;text-align:center">Cant.</th>
+        <th style="padding:8px;text-align:right">Precio unit.</th>
+        <th style="padding:8px;text-align:right">Total</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:14px;text-align:right;font-size:14px;border-top:1px solid #ddd;padding-top:10px">
+      <strong>Total: ₲ ${fmtNum(v)}</strong>
+    </div>
+  </div>`;
+  window.print();
+  setTimeout(() => { area.style.display = 'none'; area.innerHTML = ''; }, 1000);
+}
+
+function generarFacturaDesdeCliente() {
+  closeModal('modal-cliente-detalle');
+  showPage('facturas');
+  setTimeout(() => { openModal('modal-nueva-factura'); }, 300);
+  setTimeout(() => {
+    const sel = document.getElementById('fac-cliente');
+    sel.value = currentClienteId;
+  }, 400);
+}
+
+// ===================== FACTURAS =====================
+let facItems = [];
+let currentFacturaId = null;
+
+function initNuevaFactura() {
+  facItems = [];
+  const sel = document.getElementById('fac-cliente');
+  sel.innerHTML = '<option value="">— Seleccionar —</option>' +
+    DB.clientes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+  document.getElementById('fac-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fac-razon').value = '';
+  document.getElementById('fac-ruc').value = '';
+  renderFacItems();
+}
+
+function onClienteFacturaChange() {
+  const id = parseInt(document.getElementById('fac-cliente').value);
+  const c = DB.clientes.find(x => x.id === id);
+  if(c) {
+    document.getElementById('fac-razon').value = c.nombre;
+  }
+}
+
+function cargarItemsCliente() {
+  const id = parseInt(document.getElementById('fac-cliente').value);
+  if(!id) { alert('Primero seleccioná un cliente'); return; }
+  const c = DB.clientes.find(x => x.id === id);
+  if(!c || !c.items.length) { alert('Este cliente no tiene artículos cargados'); return; }
+  facItems = c.items.map(it => ({ nombre: it.nombre, cant: it.cant, precio: it.pv }));
+  renderFacItems();
+}
+
+function addFacItem() {
+  const nombre = document.getElementById('fac-item-nombre').value.trim();
+  const cant = parseInt(document.getElementById('fac-item-cant').value) || 1;
+  const precio = parseFloat(document.getElementById('fac-item-precio').value) || 0;
+  if(!nombre) { alert('Ingresá el artículo'); return; }
+  facItems.push({ nombre, cant, precio });
+  document.getElementById('fac-item-nombre').value = '';
+  document.getElementById('fac-item-cant').value = '';
+  document.getElementById('fac-item-precio').value = '';
+  renderFacItems();
+}
+
+function renderFacItems() {
+  const el = document.getElementById('fac-items-list');
+  const total = facItems.reduce((a,i) => a + i.cant * i.precio, 0);
+  const iva = total * 10 / 110;
+  if(!facItems.length) {
+    el.innerHTML = '';
+    document.getElementById('fac-totales-display').innerHTML = '<span style="color:var(--muted)">Total: ₲ 0</span>';
+    return;
+  }
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Artículo</th><th>Cant</th><th>P.Unit</th><th>IVA(10%)</th><th>Total</th><th></th></tr></thead>
+    <tbody>${facItems.map((it,i) => {
+      const sub = it.cant * it.precio;
+      const ivaIt = sub * 10 / 110;
+      return `<tr>
+        <td>${it.nombre}</td><td>${it.cant}</td><td>${fmtNum(it.precio)}</td>
+        <td style="color:var(--muted)">${fmtNum(ivaIt)}</td>
+        <td>${fmtNum(sub)}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="removeFacItem(${i})">✕</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+  document.getElementById('fac-totales-display').innerHTML =
+    `<div>Subtotal: <strong>₲ ${fmtNum(total)}</strong></div>
+     <div style="color:var(--muted)">IVA incluido (10%): ₲ ${fmtNum(iva)}</div>
+     <div style="font-size:16px;font-weight:600;color:var(--accent2)">TOTAL: ₲ ${fmtNum(total)}</div>`;
+}
+
+function removeFacItem(i) { facItems.splice(i,1); renderFacItems(); }
+
+function guardarFactura() {
+  const clienteId = parseInt(document.getElementById('fac-cliente').value);
+  const fecha = document.getElementById('fac-fecha').value;
+  const razon = document.getElementById('fac-razon').value.trim();
+  const rucCliente = document.getElementById('fac-ruc').value.trim();
+  if(!razon) { alert('Ingresá la razón social del cliente'); return; }
+  if(!facItems.length) { alert('Agregá al menos un ítem'); return; }
+  const t = DB.timbrado;
+  if(!t.numero) { alert('Primero configurá el timbrado en la sección ⚙️'); return; }
+  const nro = String(t.actual).padStart(7,'0');
+  const numFac = `${t.est}-${t.punto}-${nro}`;
+  t.actual++;
+  DB.facturas.push({ id: Date.now(), clienteId, razon, rucCliente, fecha, items: [...facItems], numFac, timbrado: t.numero, condicion: 'CONTADO' });
+  save(); // async but fire-and-forget
+  closeModal('modal-nueva-factura'); renderFacturas();
+}
+
+function renderFacturas() {
+  const el = document.getElementById('lista-facturas');
+  if(!DB.facturas.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🧾</div><div>No hay facturas aún</div></div>'; return; }
+  el.innerHTML = [...DB.facturas].reverse().map(f => {
+    const total = f.items.reduce((a,i) => a + i.cant * i.precio, 0);
+    return `<div class="client-item" onclick="verFactura(${f.id})">
+      <div class="client-avatar" style="background:linear-gradient(135deg,#f7c66a,#f77c6a)">🧾</div>
+      <div class="client-info">
+        <div class="client-name">Factura ${f.numFac}</div>
+        <div class="client-meta">${f.razon || 'Sin razón social'} · ${f.fecha}</div>
+      </div>
+      <div class="client-gain" style="color:var(--accent2)">${fmt(total)}</div>
+    </div>`;
+  }).join('');
+}
+
+function verFactura(id) {
+  currentFacturaId = id;
+  const f = DB.facturas.find(x => x.id === id);
+  if(!f) return;
+  const c = DB.clientes.find(x => x.id === f.clienteId);
+  const total = f.items.reduce((a,i) => a + i.cant * i.precio, 0);
+  const iva = total * 10 / 110;
+  const rows = f.items.map(it => {
+    const sub = it.cant * it.precio;
+    const ivaIt = sub * 10 / 110;
+    return `<tr>
+      <td>${it.nombre}</td>
+      <td style="text-align:center">${it.cant}</td>
+      <td style="text-align:right">₲ ${fmtNum(it.precio)}</td>
+      <td style="text-align:right">₲ ${fmtNum(ivaIt)}</td>
+      <td style="text-align:right">₲ ${fmtNum(sub)}</td>
+    </tr>`;
+  }).join('');
+
+  const razon = f.razon || 'N/D';
+  const rucCli = f.rucCliente || '';
+  document.getElementById('invoice-print-area').innerHTML = `
+  <div class="invoice-paper">
+    <div class="invoice-header">
+      <div>
+        <div class="invoice-title">DF Emprendimientos</div>
+        <div class="invoice-sub">RUC: 6008852-4</div>
+        <div class="invoice-sub">Timbrado N°: ${f.timbrado}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:700">FACTURA</div>
+        <div style="font-size:14px;font-weight:700;color:#333">${f.numFac}</div>
+        <div style="font-size:12px;color:#555">Fecha: ${f.fecha}</div>
+        <div style="font-size:12px;color:#555">Condición: ${f.condicion}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;padding:8px;background:#f9f9f9;border-radius:6px">
+      <div style="font-size:11px;color:#888;margin-bottom:2px">SEÑOR(ES) / RAZÓN SOCIAL:</div>
+      <div style="font-size:14px;font-weight:700">${f.razon || 'N/D'}</div>
+      ${f.rucCliente ? `<div style="font-size:12px;color:#555">RUC / CI: ${f.rucCliente}</div>` : ''}
+    </div>
+    <table class="inv-table">
+      <thead><tr><th>Descripción</th><th>Cant</th><th>Precio unit.</th><th>IVA (10%)</th><th>Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="border-top:2px solid #111;padding-top:12px;margin-top:4px">
+      <div class="inv-total" style="font-size:13px;color:#555">Subtotal: ₲ ${fmtNum(total)}</div>
+      <div class="inv-total" style="font-size:12px;color:#888">IVA incluido (10%): ₲ ${fmtNum(iva)}</div>
+      <div class="inv-total" style="font-size:19px;margin-top:4px">TOTAL: ₲ ${fmtNum(total)}</div>
+    </div>
+    <div style="margin-top:20px;font-size:10px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:10px">
+      DF Emprendimientos · RUC 6008852-4 · Timbrado N° ${f.timbrado}
+    </div>
+  </div>`;
+  openModal('modal-ver-factura');
+}
+
+function eliminarFacturaActual() {
+  if(!confirm('¿Eliminar esta factura?')) return;
+  DB.facturas = DB.facturas.filter(x => x.id !== currentFacturaId);
+  save(); // async but fire-and-forget
+  closeModal('modal-ver-factura'); renderFacturas();
+}
+
+// ===================== TIMBRADO =====================
+function loadTimbradoForm() {
+  const t = DB.timbrado;
+  document.getElementById('t-numero').value = t.numero || '';
+  document.getElementById('t-est').value = t.est || '001';
+  document.getElementById('t-punto').value = t.punto || '001';
+  document.getElementById('t-inicio').value = t.actual || 1;
+  document.getElementById('t-inicio-fecha').value = t.vigencia || '';
+  document.getElementById('t-vence').value = t.vencimiento || '';
+}
+
+function guardarTimbrado() {
+  DB.timbrado = {
+    numero: document.getElementById('t-numero').value.trim(),
+    est: document.getElementById('t-est').value.trim() || '001',
+    punto: document.getElementById('t-punto').value.trim() || '001',
+    actual: parseInt(document.getElementById('t-inicio').value) || 1,
+    vigencia: document.getElementById('t-inicio-fecha').value,
+    vencimiento: document.getElementById('t-vence').value,
+  };
+  save(); // async but fire-and-forget
+  closeModal('modal-timbrado'); renderTimbradoInfo();
+}
+
+function renderTimbradoInfo() {
+  const t = DB.timbrado;
+  const el = document.getElementById('timbrado-vigente-info');
+  if(!t.numero) {
+    el.innerHTML = '<div style="color:var(--red);font-size:13px">⚠️ Sin timbrado configurado. Hacé clic en Editar.</div>';
+    return;
+  }
+  const nroActual = `${t.est}-${t.punto}-${String(t.actual).padStart(7,'0')}`;
+  const vence = t.vencimiento ? new Date(t.vencimiento) : null;
+  const hoy = new Date();
+  const vencido = vence && vence < hoy;
+  el.innerHTML = `<div class="timb-info">
+    <div class="timb-row"><span>Timbrado N°</span><strong>${t.numero}</strong></div>
+    <div class="timb-row"><span>Próxima factura</span><strong>${nroActual}</strong></div>
+    <div class="timb-row"><span>Vigencia desde</span><strong>${t.vigencia || '—'}</strong></div>
+    <div class="timb-row"><span>Vencimiento</span>
+      <strong style="color:${vencido ? 'var(--red)' : 'var(--green)'}">${t.vencimiento || '—'} ${vencido ? '⚠️ VENCIDO' : ''}</strong>
+    </div>
+  </div>`;
+}
+
+// ===================== DASHBOARD =====================
+let chartSemana = null, chartComp = null;
+
+function renderDashboard() {
+  // Compute weekly/yearly stats from all client items + facturas
+  const now = new Date();
+  const thisWeek = weekKey(now.toISOString());
+  const thisYear = now.getFullYear();
+
+  let semanaGan = 0, anioGan = 0, totalGasto = 0;
+  DB.clientes.forEach(c => {
+    c.items.forEach(it => {
+      const gan = (it.pv - it.pc) * it.cant;
+      const gasto = it.pc * it.cant;
+      totalGasto += gasto;
+      if(weekKey(it.fecha) === thisWeek) semanaGan += gan;
+      if(yearKey(it.fecha) === thisYear) anioGan += gan;
+    });
+  });
+
+  document.getElementById('dash-semana').textContent = fmt(semanaGan);
+  document.getElementById('dash-anio').textContent = fmt(anioGan);
+  document.getElementById('dash-gasto').textContent = fmt(totalGasto);
+  document.getElementById('dash-clientes').textContent = DB.clientes.length;
+
+  // Build last 8 weeks data
+  const weeks = [];
+  for(let i=7; i>=0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i*7);
+    weeks.push({ key: weekKey(d.toISOString()), label: 'S' + weekKey(d.toISOString()).split('W')[1] });
+  }
+  const wGan = weeks.map(w => {
+    let g = 0;
+    DB.clientes.forEach(c => c.items.forEach(it => {
+      if(weekKey(it.fecha) === w.key) g += (it.pv - it.pc) * it.cant;
+    }));
+    return g;
+  });
+  const wGasto = weeks.map(w => {
+    let g = 0;
+    DB.clientes.forEach(c => c.items.forEach(it => {
+      if(weekKey(it.fecha) === w.key) g += it.pc * it.cant;
+    }));
+    return g;
+  });
+
+  const cfg = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8888aa', font: { size: 11 } } } }, scales: { x: { ticks: { color: '#8888aa', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.05)' } }, y: { ticks: { color: '#8888aa', font: { size: 10 }, callback: v => '₲' + fmtNum(v) }, grid: { color: 'rgba(255,255,255,.05)' } } } };
+
+  if(chartSemana) chartSemana.destroy();
+  chartSemana = new Chart(document.getElementById('chartSemana').getContext('2d'), {
+    type: 'bar',
+    data: { labels: weeks.map(w => w.label), datasets: [{ label: 'Ganancia', data: wGan, backgroundColor: 'rgba(124,106,247,.7)', borderRadius: 6 }] },
+    options: cfg
+  });
+
+  if(chartComp) chartComp.destroy();
+  chartComp = new Chart(document.getElementById('chartComp').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: weeks.map(w => w.label),
+      datasets: [
+        { label: 'Ganancias', data: wGan, borderColor: '#4ade80', backgroundColor: 'rgba(74,222,128,.1)', fill: true, tension: .4, pointRadius: 4 },
+        { label: 'Gastos', data: wGasto, borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,.08)', fill: true, tension: .4, pointRadius: 4 }
+      ]
+    },
+    options: { ...cfg, plugins: { ...cfg.plugins, legend: { labels: { color: '#aaa', font: { size: 11 } } } } }
+  });
+
+  // Top clientes
+  const tops = [...DB.clientes].sort((a,b) => clienteGanancia(b) - clienteGanancia(a)).slice(0,5);
+  const topEl = document.getElementById('top-clientes-list');
+  if(!tops.length) { topEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:14px">Sin datos aún</div>'; return; }
+  topEl.innerHTML = tops.map((c,i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--muted);min-width:18px">${i+1}</div>
+      <div class="client-avatar" style="width:32px;height:32px;font-size:12px">${initials(c.nombre)}</div>
+      <div style="flex:1;font-size:14px">${c.nombre}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--green)">${fmt(clienteGanancia(c))}</div>
+    </div>`).join('');
+}
+
+// ===================== INIT =====================
+// App starts via login — no auto-init here
+
+</script>
+</body>
+</html>
